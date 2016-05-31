@@ -6,6 +6,7 @@ from datetime import datetime
 
 
 import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
@@ -198,3 +199,9 @@ def random_normal():
     plt.imsave("app/static/patch.png", patch)
     print "Saved Normal Patch (Hopefully)"
     return send_file("static/patch.png")
+
+@app.route('/crossdomain.xml')
+@crossdomain(origin='*')
+@nocache
+def crossdmn():
+    return send_file("crossdomain.xml")
