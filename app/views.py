@@ -167,6 +167,7 @@ get_images()
 
 @app.route('/')
 @app.route('/index')
+@nocache
 @crossdomain(origin='*')
 def index():
     user = {'nickname': 'Miguel'}  # fake user
