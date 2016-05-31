@@ -190,7 +190,7 @@ def random_mitosis():
 @crossdomain(origin='*')
 @nocache
 def random_normal():
-    normal_coords = np.load("../orchestra_sync/intermediate_data.npy")
+    normal_coords = np.load("intermediate_data.npy")
     x, y, img_num = random.choice(normal_coords)
     x += random.randint(-10, 10)
     y += random.randint(-10, 10)
