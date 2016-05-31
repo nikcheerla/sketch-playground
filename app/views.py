@@ -203,4 +203,4 @@ def random_normal():
 @crossdomain(origin='*')
 @nocache
 def crossdmn():
-    return send_file("crossdomain.xml")
+    return send_file("../crossdomain.xml")
