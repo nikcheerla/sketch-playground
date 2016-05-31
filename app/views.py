@@ -6,10 +6,6 @@ from datetime import datetime
 
 
 import matplotlib
-try:
-    matplotlib.use("TkAgg")
-except:
-    pass
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
