@@ -104,8 +104,9 @@ PATCH_SIZE = 101
 PATCH_GAP = 50
 RADIUS = 10
 
-img = []
 coords = []
+filenames = glob.glob("train/*.jpg")
+
 
 def get_patches(coords, patchsize=PATCH_SIZE):
     patches = np.zeros((len(coords), patchsize, patchsize, 3))
@@ -117,9 +118,13 @@ def get_patches(coords, patchsize=PATCH_SIZE):
         x = dpair[0]
         y = dpair[1]
         img_num = dpair[2]
+
+        image_file = filenames[img_num]
+        print("Loading Image")
+        img = plt.imread(image_file)
         # print x, y
         #print (x - patchsize/2), (x + patchsize/2 + 1), (y - patchsize/2), (y + patchsize/2 + 1)
-        patches[i] = img[img_num, (x - patchsize / 2):(x + patchsize / 2 + 1),
+        patches[i] = img[(x - patchsize / 2):(x + patchsize / 2 + 1),
                          (y - patchsize / 2):(y + patchsize / 2 + 1), :]
         patches[i] = np.divide(patches[i], 255.0)
     return patches
@@ -128,13 +133,11 @@ def get_patches(coords, patchsize=PATCH_SIZE):
 
 def get_images():
     global img, coords
-    img = []
     coords = []
     cnt = 0
     for imgfile in glob.iglob("train/*.jpg"):
         print "\n" + imgfile,
         annotfile = imgfile[:-3] + "csv"
-        img.append(plt.imread(imgfile))
         csvReader = csv.reader(open(annotfile, 'rb'))
         tot = 0
         imgMask = np.zeros((SIZE, SIZE))
@@ -155,12 +158,12 @@ def get_images():
                         coords.append((yv, xv, cnt))
                         tot = tot + 1
         cnt += 1
-    img = np.array(img)
 
-    print img.shape
     print len(coords)
 
+
 get_images()
+
 
 @app.route('/')
 @app.route('/index')
