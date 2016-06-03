@@ -25,6 +25,9 @@ from numpy.linalg import norm
 
 import csv
 
+from flask_table import Table, Col
+
+
 
 ### Important Methods ###
 
@@ -109,7 +112,6 @@ RADIUS = 10
 coords = []
 filenames = glob.glob("train/*.jpg")
 
-
 def get_patches(coords, patchsize=PATCH_SIZE):
     patches = np.zeros((len(coords), patchsize, patchsize, 3))
     i = 0
@@ -165,15 +167,18 @@ def get_images():
 
 
 get_images()
-
+try:
+    results = pickle.load(open( "results.pkl", "rb" ))
+except:
+    results = []
+print "Results = " + str(results)
 
 @app.route('/')
 @app.route('/index')
 @nocache
 @crossdomain(origin='*')
 def index():
-    user = {'nickname': 'Miguel'}  # fake user
-    return render_template('index.html', title='Home', user=user)
+    return render_template('index.html', title='Home')
 
 
 
@@ -202,12 +207,15 @@ def random_normal():
     print "Saved Normal Patch (Hopefully)"
     return send_file("static/patch.png")
 
+idq = 1
 @app.route('/uncategorized')
 @crossdomain(origin='*')
 @nocache
 def random_uncat():
+    global idq
     num = random.randint(1, 6)
-    return send_file("uncat/uncat" + str(num) + ".png")
+    idq = num
+    return send_file("static/uncat/uncat" + str(num) + ".png")
 
 
 @app.route('/crossdomain.xml')
@@ -215,3 +223,64 @@ def random_uncat():
 @nocache
 def crossdmn():
     return send_file("../crossdomain.xml")
+
+
+@app.route('/categorize', methods = ['POST'])
+def categorize():
+    global results
+    accuracy = int(request.form['accuracy'])
+    label = int(request.form['label'])
+    category = str(request.form['category'])
+    results.append((accuracy, label, category))
+    pickle.dump( results, open( "results.pkl", "wb" ) )
+    print "Results = " + str(results)
+    return "Good"
+
+@app.route('/idquery')
+@crossdomain(origin='*')
+@nocache
+def idquery():
+    return str(idq)
+
+
+
+
+
+def gen_tables():
+    tables = {}
+    for num in range(1, 7):
+        items = [];
+
+        # Declare your table
+        class ItemTable(Table):
+            player_num = Col('Player ID')
+            num_correct = Col('Number Correct')
+            classification = Col('Classification')
+        # load items 
+        fileUrl = "uncat/uncat" + str(num) + ".png"
+
+        numTot = 0
+        numMit = 0
+        correct = 0
+        for i in range(0, len(results)):
+            if results[i][1] == num:
+                items.append(dict(player_num = i, num_correct=results[i][0], classification = results[i][2]))
+                numTot += 1
+                correct += results[i][0]
+                if results[i][2] == 'mitosis':
+                    numMit += 1
+        if numTot > 0:
+            items.append(dict(player_num = "Average", num_correct= "{0:.2f}".format(correct/float(numTot)), classification = "{0:.1f}".format(numMit*100.0/numTot) + "% Mitosis"))
+        
+        # Populate the table
+        table = ItemTable(items)
+        tables[fileUrl] = table
+    print tables
+    return tables
+
+@app.route('/data')
+@crossdomain(origin='*')
+@nocache
+def render_data():
+    tables = gen_tables()
+    return render_template('data.html', tables=tables)
