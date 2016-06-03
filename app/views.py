@@ -3,16 +3,18 @@ from app import app
 from functools import wraps, update_wrapper
 from datetime import datetime
 
-
-
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-
 import cPickle as pickle
 import os
 import glob
 import sys
+
+import matplotlib
+if len(sys.argv) > 1:
+    matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+
+
 
 
 import numpy as np
@@ -199,6 +201,14 @@ def random_normal():
     plt.imsave("app/static/patch.png", patch)
     print "Saved Normal Patch (Hopefully)"
     return send_file("static/patch.png")
+
+@app.route('/uncategorized')
+@crossdomain(origin='*')
+@nocache
+def random_uncat():
+    num = random.randint(1, 6)
+    return send_file("uncat/uncat" + str(num) + ".png")
+
 
 @app.route('/crossdomain.xml')
 @crossdomain(origin='*')
