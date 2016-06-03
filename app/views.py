@@ -9,7 +9,7 @@ import glob
 import sys
 
 import matplotlib
-if len(sys.argv) > 1:
+if 'DYNO' not in os.environ:
     matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
