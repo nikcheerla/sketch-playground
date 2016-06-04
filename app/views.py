@@ -110,7 +110,7 @@ PATCH_GAP = 50
 RADIUS = 10
 
 coords = []
-filenames = glob.glob("train/*.jpg")
+filenames = glob.glob("app/static/train/*.jpg")
 
 def get_patches(coords, patchsize=PATCH_SIZE):
     patches = np.zeros((len(coords), patchsize, patchsize, 3))
@@ -139,7 +139,7 @@ def get_images():
     global img, coords
     coords = []
     cnt = 0
-    for imgfile in glob.iglob("train/*.jpg"):
+    for imgfile in glob.iglob("app/static/train/*.jpg"):
         print "\n" + imgfile,
         annotfile = imgfile[:-3] + "csv"
         csvReader = csv.reader(open(annotfile, 'rb'))
@@ -198,7 +198,7 @@ def random_mitosis():
 @crossdomain(origin='*')
 @nocache
 def random_normal():
-    normal_coords = np.load("intermediate_data.npy")
+    normal_coords = np.load("app/static/intermediate_data.npy")
     x, y, img_num = random.choice(normal_coords)
     x += random.randint(-10, 10)
     y += random.randint(-10, 10)
