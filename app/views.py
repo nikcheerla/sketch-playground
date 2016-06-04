@@ -252,6 +252,12 @@ def idquery():
 
 
 def gen_tables():
+    global results
+    try:
+        results = pickle.load(open( "results.pkl", "rb" ))
+        print "Loaded results " + str(results)
+    except:
+        results = []
     tables = {}
     for num in range(1, 7):
         items = [];
