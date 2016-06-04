@@ -228,6 +228,10 @@ def crossdmn():
 @app.route('/categorize', methods = ['POST'])
 def categorize():
     global results
+    try:
+        results = pickle.load(open( "results.pkl", "rb" ))
+    except:
+        results = []
     accuracy = int(request.form['accuracy'])
     label = int(request.form['label'])
     category = str(request.form['category'])
