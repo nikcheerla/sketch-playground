@@ -230,6 +230,7 @@ def categorize():
     global results
     try:
         results = pickle.load(open( "results.pkl", "rb" ))
+        print "Loaded results " + str(results)
     except:
         results = []
     accuracy = int(request.form['accuracy'])
