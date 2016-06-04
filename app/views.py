@@ -263,6 +263,7 @@ def gen_tables():
         numMit = 0
         correct = 0
         for i in range(0, len(results)):
+            print (i, results[i])
             if results[i][1] == num:
                 items.append(dict(player_num = i, num_correct=results[i][0], classification = results[i][2]))
                 numTot += 1
