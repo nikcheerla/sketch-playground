@@ -213,8 +213,14 @@ idq = 1
 @nocache
 def random_uncat():
     global idq
+    try:
+        idq = pickle.load(open( "idq.pkl", "rb" ))
+        print "Loaded id " + str(idq)
+    except:
+        idq = 1
     num = random.randint(1, 6)
     idq = num
+    pickle.dump( idq, open( "idq.pkl", "wb" ) )
     return send_file("static/uncat/uncat" + str(num) + ".png")
 
 
@@ -245,6 +251,12 @@ def categorize():
 @crossdomain(origin='*')
 @nocache
 def idquery():
+    global idq
+    try:
+        idq = pickle.load(open( "idq.pkl", "rb" ))
+        print "Loaded id " + str(idq)
+    except:
+        idq = 1
     return str(idq)
 
 
