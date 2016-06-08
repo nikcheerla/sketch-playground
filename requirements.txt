@@ -8,7 +8,7 @@ itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23
 matplotlib==1.5.1
-git+https://github.com/vishnubob/python-midi
+git+https://github.com/ozgur/python-firebase
 numpy==1.11.0
 pbr==1.9.1
 Pillow==3.2.0

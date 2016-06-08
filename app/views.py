@@ -1,4 +1,5 @@
 from flask import render_template, url_for, send_file
+from firebase import firebase
 from app import app
 from functools import wraps, update_wrapper
 from datetime import datetime
@@ -98,11 +99,11 @@ def crossdomain(origin=None, methods=None, headers=None,
 
 
 
+authentication = firebase.FirebaseAuthentication('ZKjxdrAbhYOCVunD7wW6R56sJs8CmEKVMIO1EghP', 'nikcheerla@gmail.com')
 
+firebase = firebase.FirebaseApplication('https://mitosis-cloud.firebaseio.com', authentication=authentication)
 
-
-
-
+print firebase
 
 SIZE = 2084
 PATCH_SIZE = 101
@@ -165,13 +166,31 @@ def get_images():
 
     print len(coords)
 
+results = []
+idq = 1
+
+def update_data():
+    global results, idq
+    obj = firebase.get("stored-data", None)
+    obj = obj[obj.keys()[0]]
+    idq = obj["id"]
+    results = obj["results"]
+
+    print "Results = " + str(results)
+    print "Loaded id " + str(idq)
+
+def replace_data():
+    global results, idq
+    firebase.delete('stored-data', None)
+    firebase.post("stored-data", {"id": idq, "results":results}, None)
+
 
 get_images()
-try:
-    results = pickle.load(open( "results.pkl", "rb" ))
-except:
-    results = []
+update_data()
 print "Results = " + str(results)
+
+
+
 
 @app.route('/')
 @app.route('/index')
@@ -212,15 +231,16 @@ idq = 1
 @crossdomain(origin='*')
 @nocache
 def random_uncat():
-    global idq
-    try:
-        idq = pickle.load(open( "idq.pkl", "rb" ))
-        print "Loaded id " + str(idq)
-    except:
-        idq = 1
+    global idq, results
+    update_data()
+
+    
+
     num = random.randint(1, 6)
     idq = num
-    pickle.dump( idq, open( "idq.pkl", "wb" ) )
+    
+    replace_data()
+    print "Replaced with " + str(idq)
     return send_file("static/uncat/uncat" + str(num) + ".png")
 
 
@@ -233,17 +253,16 @@ def crossdmn():
 
 @app.route('/categorize', methods = ['POST'])
 def categorize():
-    global results
-    try:
-        results = pickle.load(open( "results.pkl", "rb" ))
-        print "Loaded results " + str(results)
-    except:
-        results = []
+    global idq, results
+    update_data()
+
     accuracy = int(request.form['accuracy'])
     label = int(request.form['label'])
     category = str(request.form['category'])
     results.append((accuracy, label, category))
-    pickle.dump( results, open( "results.pkl", "wb" ) )
+    
+    replace_data()
+
     print "Results = " + str(results)
     return "Good"
 
@@ -251,12 +270,8 @@ def categorize():
 @crossdomain(origin='*')
 @nocache
 def idquery():
-    global idq
-    try:
-        idq = pickle.load(open( "idq.pkl", "rb" ))
-        print "Loaded id " + str(idq)
-    except:
-        idq = 1
+    global idq, results
+    update_data()
     return str(idq)
 
 
@@ -264,12 +279,8 @@ def idquery():
 
 
 def gen_tables():
-    global results
-    try:
-        results = pickle.load(open( "results.pkl", "rb" ))
-        print "Loaded results " + str(results)
-    except:
-        results = []
+    global idq, results
+    update_data()
     tables = {}
     for num in range(1, 7):
         items = [];
