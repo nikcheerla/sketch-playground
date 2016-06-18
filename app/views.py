@@ -170,19 +170,17 @@ results = []
 idq = 1
 
 def update_data():
-    global results, idq
+    global results
     obj = firebase.get("stored-data", None)
     obj = obj[obj.keys()[0]]
-    idq = obj["id"]
     results = obj["results"]
 
     print "Results = " + str(results)
-    print "Loaded id " + str(idq)
 
 def replace_data():
-    global results, idq
+    global results
     firebase.delete('stored-data', None)
-    firebase.post("stored-data", {"id": idq, "results":results}, None)
+    firebase.post("stored-data", {"results":results}, None)
 
 
 get_images()
@@ -227,21 +225,15 @@ def random_normal():
     return send_file("static/patch.png")
 
 idq = 1
-@app.route('/uncategorized')
+@app.route('/uncategorized', methods = ['GET', 'POST'])
 @crossdomain(origin='*')
 @nocache
 def random_uncat():
-    global idq, results
-    update_data()
-
-    
-
-    num = random.randint(1, 6)
-    idq = num
-    
-    replace_data()
-    print "Replaced with " + str(idq)
-    return send_file("static/uncat/uncat" + str(num) + ".png")
+    try:
+        idq = int(request.form['img'])
+    except:
+        idq = random.randint(1, 6)
+    return send_file("static/uncat/uncat" + str(idq) + ".png")
 
 
 @app.route('/crossdomain.xml')
@@ -265,16 +257,6 @@ def categorize():
 
     print "Results = " + str(results)
     return "Good"
-
-@app.route('/idquery')
-@crossdomain(origin='*')
-@nocache
-def idquery():
-    global idq, results
-    update_data()
-    return str(idq)
-
-
 
 
 
