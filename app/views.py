@@ -171,10 +171,12 @@ idq = 1
 
 def update_data():
     global results
-    obj = firebase.get("stored-data", None)
-    obj = obj[obj.keys()[0]]
-    results = obj["results"]
-
+    try:
+        obj = firebase.get("stored-data", None)
+        obj = obj[obj.keys()[0]]
+        results = obj["results"]
+    except:
+        results = []
     print "Results = " + str(results)
 
 def replace_data():
@@ -251,7 +253,8 @@ def categorize():
     accuracy = int(request.form['accuracy'])
     label = int(request.form['label'])
     category = str(request.form['category'])
-    results.append((accuracy, label, category))
+    username = str(request.form['username'])
+    results.append((accuracy, label, category, username))
     
     replace_data()
 
@@ -269,7 +272,7 @@ def gen_tables():
 
         # Declare your table
         class ItemTable(Table):
-            player_num = Col('Player ID')
+            player_num = Col('Player Username')
             num_correct = Col('Number Correct')
             classification = Col('Classification')
         # load items 
@@ -281,13 +284,13 @@ def gen_tables():
         for i in range(0, len(results)):
             print (i, results[i])
             if results[i][1] == num:
-                items.append(dict(player_num = i, num_correct=results[i][0], classification = results[i][2]))
+                items.append(dict(player_num = results[i][3], num_correct=results[i][0], classification = results[i][2]))
                 numTot += 1
                 correct += results[i][0]
                 if results[i][2] == 'mitosis':
                     numMit += 1
         if numTot > 0:
-            items.append(dict(player_num = "Average", num_correct= "{0:.2f}".format(correct/float(numTot)), classification = "{0:.1f}".format(numMit*100.0/numTot) + "% Mitosis"))
+            items.append(dict(player_num = "AVERAGE", num_correct= "{0:.2f}".format(correct/float(numTot)), classification = "{0:.1f}".format(numMit*100.0/numTot) + "% Mitosis"))
         
         # Populate the table
         table = ItemTable(items)
