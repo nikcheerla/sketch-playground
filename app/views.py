@@ -234,8 +234,8 @@ def random_uncat():
     try:
         idq = int(request.form['img'])
     except:
-        idq = random.randint(1, 6)
-    return send_file("static/uncat/uncat" + str(idq) + ".png")
+        idq = random.randint(1, 121)
+    return send_file("static/uncat/uncat" + str(idq) + ".jpg")
 
 
 @app.route('/crossdomain.xml')
@@ -267,7 +267,7 @@ def gen_tables():
     global idq, results
     update_data()
     tables = {}
-    for num in range(1, 7):
+    for num in range(1, 121):
         items = [];
 
         # Declare your table
@@ -276,7 +276,7 @@ def gen_tables():
             num_correct = Col('Number Correct')
             classification = Col('Classification')
         # load items 
-        fileUrl = "uncat/uncat" + str(num) + ".png"
+        fileUrl = "uncat/uncat" + str(num) + ".jpg"
 
         numTot = 0
         numMit = 0
@@ -294,7 +294,7 @@ def gen_tables():
         
         # Populate the table
         table = ItemTable(items)
-        tables[fileUrl] = table
+        tables[num] = table
     print tables
     return tables
 

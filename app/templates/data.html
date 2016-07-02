@@ -151,8 +151,8 @@
 		<p class="header"> <a href="/index"> Game </a><span>| Data Report |</span> MitosisBird</p>
 		<div class="content">
 			{% for key, value in tables.iteritems()|sort %}
-				<h1> Image {{key[11]}}:</h1>
-				<img src = "{{url_for("static", filename=key)}}" class="cellimage"> </img>
+				<h1> Image {{key}}:</h1>
+				<img src = "{{url_for('static', filename='uncat/uncat' ~ key ~ '.jpg')}}" class="cellimage"> </img>
 				<div class="rwd-table"> {{tables[key]}} </div> 
 			{% endfor %}
 		</div>
