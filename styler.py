@@ -32,7 +32,6 @@ loader = transforms.Compose([
     transforms.Scale(imsize),  # scale imported image
     transforms.ToTensor()])  # transform it into a torch tensor
 
-print ("Made loader")
 def image_loader(image_name):
     image = Image.open(image_name)
     image = Variable(loader(image)[0:3, 0:imsize, 0:imsize])
@@ -42,12 +41,6 @@ def image_loader(image_name):
     return image
 
 
-print ("Loading style/content images")
-
-style_img = image_loader(sys.argv[1]).type(dtype)
-content_img = image_loader(sys.argv[2]).type(dtype)
-
-print ("Loaded style/content images")
 
 #assert style_img.size() == content_img.size(), \
 #    "we need to import style and content images of the same size"
@@ -61,8 +54,7 @@ def imshow(tensor, file_name=None):
     image = unloader(image)
     plt.imsave(file_name, image)
 
-imshow(style_img.data, file_name='style.jpg')
-imshow(content_img.data, file_name='content.jpg')
+
 
 
 class ContentLoss(nn.Module):
@@ -78,12 +70,12 @@ class ContentLoss(nn.Module):
         kernel[2, 2] = 1
         kernel = filters.gaussian_filter(kernel, sigma=1.4)
         self.gaussian = torch.Tensor(kernel).view(1, 1, 5, 5)
-        self.gaussian = self.gaussian.repeat(target.size(1), target.size(1), 1, 1)
+        self.gaussian = self.gaussian.repeat(target.size(1), target.size(1), 1, 1).cuda()
 
         self.sobelx = torch.Tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]]).view(1, 1, 3, 3)
         self.sobely = torch.Tensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]]).view(1, 1, 3, 3)
-        self.sobelx = self.sobelx.repeat(target.size(1), target.size(1), 1, 1)
-        self.sobely = self.sobely.repeat(target.size(1), target.size(1), 1, 1)
+        self.sobelx = self.sobelx.repeat(target.size(1), target.size(1), 1, 1).cuda()
+        self.sobely = self.sobely.repeat(target.size(1), target.size(1), 1, 1).cuda()
 
         self.weight = weight
         self.criterion = nn.MSELoss()
@@ -233,7 +225,6 @@ def get_style_model_and_losses(cnn, style_img, content_img,
 
 
 
-input_img = content_img.clone()
 
 def get_input_param_optimizer(input_img):
     # this line to show that input is a parameter that requires a gradient
@@ -244,7 +235,7 @@ def get_input_param_optimizer(input_img):
 
 
 def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=550,
-                       style_weight=1000, content_weight=1):
+                       style_weight=1000, content_weight=1, freq=50):
     """Run the style transfer."""
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
@@ -270,7 +261,7 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=550,
                 content_score += cl.backward()
 
             run[0] += 1
-            if run[0] % 50 == 0:
+            if run[0] % freq == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.data[0], content_score.data[0]))
@@ -278,17 +269,35 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=550,
 
             return style_score + content_score
 
+        if run[0] % freq == 0:
+            input_param.data.clamp_(0, 1)
+            yield input_param.data
+
         optimizer.step(closure)
 
     input_param.data.clamp_(0, 1)
-
-    return input_param.data
-
+    yield input_param.data
 
 
 
-output = run_style_transfer(cnn, content_img, style_img, input_img)
-output -= (1.0-content_img).data
-output = output.clamp(0, 1)
+def transfer(style_file, content_file, out_file="out.jpg"):
 
-imshow(output, file_name='out.jpg')
+    style_img = image_loader(style_file).type(dtype)
+    content_img = image_loader(content_file).type(dtype)
+
+    imshow(style_img.data, file_name='style.jpg')
+    imshow(content_img.data, file_name=out_file)
+
+    input_img = content_img.clone()
+
+    for output in run_style_transfer(cnn, content_img, style_img, input_img):
+        output -= (1.0-content_img).data
+        output = output.clamp(0, 1)
+
+        imshow(output, file_name=out_file)
+
+
+if __name__ == "__main__":
+    
+    transfer(sys.argv[1], sys.argv[2])
+    

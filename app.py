@@ -1,5 +1,5 @@
 
-import os, glob, sys, pickle, random, csv
+import os, glob, sys, pickle, random, csv, threading
 import numpy as np
 
 from flask import Flask, request, redirect, url_for
@@ -10,7 +10,10 @@ from werkzeug.utils import secure_filename
 from functools import wraps, update_wrapper
 from datetime import datetime
 
-UPLOAD_FOLDER = '/Users/nikcheerla/nn_playground/cloud_server/uploads'
+from styler import transfer
+
+
+UPLOAD_FOLDER = '/home/nik/Projects/image-prior/sketch-playground/uploads'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -40,10 +43,14 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print (os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(path)
+
+            args = ("images/wave.jpg", path, "uploads/out.jpg")
+            thread = threading.Thread(target=transfer, args=args)
+            thread.start()
             return redirect(url_for('uploaded_file',
-                                    filename=filename))
+                                    filename='out.jpg'))
     return '''
         <!doctype html>
         <title>Upload new File</title>
