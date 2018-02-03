@@ -153,7 +153,7 @@ if use_cuda:
     cnn = cnn.cuda()
 
 content_layers_default = ['conv_3', 'conv_4']
-style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
+style_layers_default = ['conv_2', 'conv_3', 'conv_4', 'conv_5']
 
 
 def get_style_model_and_losses(cnn, style_img, content_img,
@@ -235,7 +235,7 @@ def get_input_param_optimizer(input_img):
 
 
 def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=550,
-                       style_weight=1000, content_weight=1, freq=50):
+                       style_weight=1000, content_weight=1, freq=10):
     """Run the style transfer."""
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,

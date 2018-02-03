@@ -46,7 +46,7 @@ def upload_file():
             path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(path)
 
-            args = ("images/wave.jpg", path, "uploads/out.jpg")
+            args = ("images/picasso.jpg", path, "uploads/out.jpg")
             thread = threading.Thread(target=transfer, args=args)
             thread.start()
             return redirect(url_for('uploaded_file',
